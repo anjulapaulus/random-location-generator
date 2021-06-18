@@ -21,7 +21,7 @@ func pointAtDistance(location Location, radius float64) Location{
 	loc := toRadians(location)
 
 	sinLat := math.Sin(loc.Latitude)
-	cosLat := math.Sin(loc.Latitude)
+	cosLat := math.Cos(loc.Latitude)
 
 	bearing := rand.Float64() * TwoPi
 	theta := radius / EarthRadius
@@ -30,7 +30,7 @@ func pointAtDistance(location Location, radius float64) Location{
 	sinTheta   := math.Sin(theta)
 	cosTheta   := math.Cos(theta)
 
-	latitude := math.Asin(sinLat*cosTheta+cosLat*sinTheta*cosBearing)
+	latitude := math.Asin(sinLat * cosTheta + cosLat*sinTheta*cosBearing)
 	longitude := location.Longitude +
 		math.Atan2( sinBearing*sinTheta*cosLat, cosTheta-sinLat*math.Sin(latitude))
 
