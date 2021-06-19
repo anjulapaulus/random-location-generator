@@ -4,54 +4,42 @@ import (
 	"math"
 	"math/rand"
 )
+const EarthRadius float64= 6372796.924
+const DegToRad =  math.Pi / 180.0
 
 type Location struct{
 	Latitude	float64
 	Longitude	float64
 }
 
-const EarthRadius = 6371000 /* meters  */
-const DegToRad =  math.Pi / 180.0
-const ThreePi float64 = math.Pi*3
-const TwoPi float64 = math.Pi*2
+func RandomLocation(location Location, radius float64) Location{
+	rad := toRadians(location)
 
+	rand1 := rand.Float64()
+	rand2 := rand.Float64()
 
-func pointAtDistance(location Location, radius float64) Location{
-	// Convert Degrees to radians
-	loc := toRadians(location)
+	maxdist:= radius / EarthRadius
 
-	sinLat := math.Sin(loc.Latitude)
-	cosLat := math.Cos(loc.Latitude)
+	dist := math.Acos(rand1*(math.Cos(maxdist) - 1) + 1)
+	brg := 2*math.Pi*rand2
 
-	bearing := rand.Float64() * TwoPi
-	theta := radius / EarthRadius
-	sinBearing := math.Sin(bearing)
-	cosBearing := math.Cos(bearing)
-	sinTheta   := math.Sin(theta)
-	cosTheta   := math.Cos(theta)
+	lat := math.Asin(math.Sin(rad.Latitude)*math.Cos(dist) + math.Cos(rad.Latitude)*math.Sin(dist)*math.Cos(brg))
+	lon := rad.Longitude + math.Atan2(math.Sin(brg)*math.Sin(dist)*math.Cos(rad.Latitude), math.Cos(dist)-math.Sin(rad.Latitude)*math.Sin(lat))
 
-	latitude := math.Asin(sinLat * cosTheta + cosLat*sinTheta*cosBearing)
-	longitude := location.Longitude +
-		math.Atan2( sinBearing*sinTheta*cosLat, cosTheta-sinLat*math.Sin(latitude))
+	lon = lon + 2*math.Pi
 
-	/* normalize -PI -> +PI radians */
-	longitude = math.Mod(longitude+ThreePi, TwoPi) - math.Pi
-
-	locs := toDegrees(Location{
-		Latitude: latitude,
-		Longitude: longitude,
-	})
-
-	return Location{
-		Latitude: locs.Latitude,
-		Longitude: locs.Longitude,
+	if lon < -math.Pi{
+		lon = lon + 2*math.Pi
+	}else if lon > math.Pi{
+		lon = lon - 2*math.Pi
 	}
-}
 
-func GenerateLocations(location Location, radius float64) Location{
-	rnd := rand.Float64()
-	ranDist := math.Sqrt(rnd) * radius
-	return pointAtDistance(location, ranDist)
+	loc:=toDegrees(Location{
+		Latitude: lat,
+		Longitude: lon,
+	})
+	return loc
+
 }
 
 func toRadians(location Location) Location{
